@@ -55,20 +55,14 @@ JOIN
 JOIN
     employees e ON s.sales_person_id = e.employee_id          -- Присоединяет таблицу "employees" по совпадению sales_person_id и employee_id.
 GROUP BY
-    CONCAT(e.first_name, ' ', e.last_name),                   -- Группирует по полному имени продавца.
-    LOWER(TRIM(TO_CHAR(s.sale_date, 'Day'))),                 -- Группирует по названию дня недели.
-    case                                                      -- Начинает условное выражение для группировки по номеру дня недели.
-        WHEN EXTRACT(DOW FROM s.sale_date) = 0 THEN 7         -- Если день воскресенье (0), присваивает 7 для сортировки.
-        ELSE EXTRACT(DOW FROM s.sale_date)                    -- Иначе использует номер дня (1-6 для понедельника-субботы)
-    END                                                       -- Завершает условное выражение.
-ORDER BY
-    CASE                                                      -- Начинает условное выражение для сортировки по номеру дня недели
-        WHEN EXTRACT(DOW FROM s.sale_date) = 0 THEN 7         -- Если день воскресенье (0), присваивает 7.
-        ELSE EXTRACT(DOW FROM s.sale_date)                    -- Иначе использует номер дня (1-6)
-    END,                                                      -- Завершает условное выражение и сортирует по нему.
-    seller;                                                   -- Сортирует по имени продавца.
+    CONCAT(e.first_name, ' ', e.last_name),					  -- Группирует по полному имени продавца.
+    LOWER(TRIM(TO_CHAR(s.sale_date, 'Day'))),				  -- Группирует по названию дня недели.
+    EXTRACT(ISODOW FROM s.sale_date)  						  -- Извлечение номер дня недели по стандарту ISO
+ORDER by													  
+    EXTRACT(ISODOW FROM s.sale_date),						  -- сортирует по номеру дня недели
+    seller;													  -- сортирует по продавцу
 
-
+    
 SELECT                                          -- Начинает выборку данных из таблицы.
     CASE                                        -- Начинает условное выражение для категоризации возраста.
         WHEN age BETWEEN 16 AND 25 THEN '16-25' -- Если возраст от 16 до 25, присваивает категорию '16-25'.
@@ -85,7 +79,7 @@ ORDER BY                                        -- Сортирует резул
 
 
 SELECT
-    TO_CHAR(s.sale_date, 'YYYY-MM') AS date,          -- Преобразует дату продажи в формат ГОД-МЕСЯЦ и называет колонку "date".
+    TO_CHAR(s.sale_date, 'YYYY-MM') AS selling_month, -- Преобразует дату продажи в формат ГОД-МЕСЯЦ и называет колонку "date".
     COUNT(DISTINCT s.customer_id) AS total_customers, -- Подсчитывает количество уникальных покупателей по customer_id.
     FLOOR(SUM(s.quantity * p.price)) AS income        -- Вычисляет суммарную выручку (количество * цену), округляет вниз и называет колонку "income".
 FROM
@@ -95,7 +89,7 @@ JOIN
 GROUP BY
     TO_CHAR(s.sale_date, 'YYYY-MM')                   -- Группирует результаты по месяцу в формате ГОД-МЕСЯЦ.
 ORDER BY
-    date ASC;                                         -- Сортирует результаты по дате в порядке возрастания.
+    selling_month ASC;                                -- Сортирует результаты по дате в порядке возрастания.
 
 
 WITH first_sales AS (
@@ -121,7 +115,7 @@ promo_first AS (
     WHERE
         p.price = 0                                                                    -- Фильтрует только акционные товары с ценой 0
     GROUP BY
-        fs.customer_id, fs.first_sale_date, s.sales_person_id                           -- Группирует для уникальности (если несколько товаров в первой покупке).
+        fs.customer_id, fs.first_sale_date, s.sales_person_id                          -- Группирует для уникальности (если несколько товаров в первой покупке).
 )
 SELECT
     CONCAT(c.first_name, ' ', c.last_name) AS customer,  -- Объединяет имя и фамилию покупателя в колонку "customer".
