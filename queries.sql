@@ -43,7 +43,7 @@ having
         select overall_avg.global_avg_income from overall_avg
     )
 order by
-    average_income asc;                                                    
+    average_income asc;
 
 
 select
@@ -62,9 +62,9 @@ group by
     s.sales_person_id, e.first_name, e.last_name
 order by
     income desc
-limit 10;											  
+limit 10;
 
-    
+
 select
     case
         when age between 16 and 25 then '16-25'
@@ -77,7 +77,7 @@ from
 group by
     age_category
 order by
-    age_category asc;                     
+    age_category asc;
 
 
 select
