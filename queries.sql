@@ -1,4 +1,5 @@
 select count(customer_id) as customers_count from customers
+select count(customer_id) as customers_count from customers
 
 -- Запрос подсчитывает количество покупателей в таблице customers с помощью count по колонке customer_id, 
 -- которая является уникальным идентификатором для каждого покупателя. 
